@@ -1,21 +1,56 @@
-import { Component , OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ProductService } from '../product.service';
+import { CartService } from 'src/app/cart/cart.service';
 import { Product } from 'src/app/models/product';
+import { MatSnackBar } from '@angular/material/snack-bar';
 @Component({
   selector: 'app-product-list',
   templateUrl: './product-list.component.html',
-  styleUrls: ['./product-list.component.css']
+  styleUrls: ['./product-list.component.css'],
 })
 export class ProductListComponent implements OnInit {
-
   products: Product[] = [];
-  constructor(private ProductService:ProductService) {
-    
-  }
+  filteredProducts: Product[] = [];
+  sortOrder: string = '';
+  constructor(
+    private ProductService: ProductService,
+    private CartService: CartService,
+    private snackbar: MatSnackBar
+  ) {}
   ngOnInit(): void {
-    this.ProductService.getProducts().subscribe(data =>{
+    this.ProductService.getProducts().subscribe((data) => {
       this.products = data;
-    })
+      this.filteredProducts = data;
+    });
+  }
+  addToCart(product: Product): void {
+    this.CartService.addToCart(product).subscribe({
+      next: () => {
+        this.snackbar.open('product added to cart!', '', {
+          duration: 2000,
+          horizontalPosition: 'right',
+          verticalPosition: 'top',
+        });
+      },
+    });
   }
 
+  applyFilter(event: Event): void {
+    let searchTerm = (event.target as HTMLInputElement).value;
+    searchTerm = searchTerm.toLocaleLowerCase();
+
+    this.filteredProducts = this.products.filter((product) =>
+      product.name.toLocaleLowerCase().includes(searchTerm)
+    );
+    this.sortProduct(this.sortOrder);
+  }
+
+  sortProduct(sortValue: string) {
+    this.sortOrder = sortValue;
+    if (this.sortOrder === 'priceLowHigh') {
+      this.filteredProducts.sort((a, b) => a.price - b.price);
+    } else if (this.sortOrder === 'priceHighLow') {
+      this.filteredProducts.sort((a, b) => b.price - a.price);
+    }
+  }
 }

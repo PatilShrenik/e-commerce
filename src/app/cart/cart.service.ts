@@ -9,9 +9,9 @@ import { Product } from '../models/product';
 export class CartService {
  private apiUrl = "http://localhost:3000/cart" 
 //private apiUrl = environment.apiUrl + '/cart';
+private apiCheckoutUrl = "http://localhost:3000/checkout" 
 
   constructor(private http: HttpClient) { }
-
   addToCart(product: Product): Observable<Product>{
     return this.http.post<Product>(this.apiUrl,product)
   }
@@ -20,5 +20,8 @@ export class CartService {
   }
   clearCart(): Observable<void>{
     return this.http.delete<void>(this.apiUrl)
+  }
+  checkout(products: Product[]): Observable<void>{
+    return this.http.post<void>(this.apiCheckoutUrl,products);
   }
 }
